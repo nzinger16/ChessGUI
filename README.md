@@ -1,7 +1,9 @@
-# wx_cmake_template
+#Chess GUI APP
 
-A template for multiplatform WxWidgets projects using CMake
+Requirements:
+Visual Studio 2019
+Vs-Code
 
-For details see the blog post: https://justdevtutorials.medium.com/wxwidgets-cmake-multiplatform-superbuild-4ea86c4e6eda
-
-Also check out the video tutorial showcasing installation on Linux, Windows and Mac OS X: https://www.youtube.com/watch?v=MfuBS9n5_aY&t=4s
+Open Vs-Code from x64 Native tools command prompt (From Vs2019 community install)
+Pull this repo or create a folder with the code.
+hit F5 to build and run
