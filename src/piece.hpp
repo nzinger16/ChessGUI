@@ -13,13 +13,28 @@ public:
     std::string coordName;
     //true = white, false = black
     bool colour;
-    // wxImage img;
+
+    // GUI variables for moving pieces
+    int pieceSize;
+    int boardX;
+    int boardY;
+    wxBitmap pieceImage;
+    bool isDragging;
+    bool isClicked;
+    wxPoint dragPos;
+    wxPoint clickPos;
+
+    std::string pieceName;
 
     Piece()
     {
         isEmpty = true;
     }
-    Piece(PieceType type, bool colour) : type(type), colour(colour), isEmpty(false)
+
+    void setPieceName();
+
+    Piece(PieceType type, bool colour) : type(type), colour(colour), isEmpty(false), isDragging(false), isClicked(false)
     {
+        setPieceName();
     }
 };

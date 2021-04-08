@@ -4,6 +4,9 @@
 #include <wx/wx.h>
 #endif
 
+#include "wx/generic/dragimgg.h"
+#define wxDragImage wxGenericDragImage
+
 #include <map>
 
 enum
@@ -40,5 +43,17 @@ namespace
         {Rook, wxString(wxT("C:\\Projects\\chess_app_gui\\src\\img\\black_rook.png"))},
         {Queen, wxString(wxT("C:\\Projects\\chess_app_gui\\src\\img\\black_queen.png"))},
         {King, wxString(wxT("C:\\Projects\\chess_app_gui\\src\\img\\black_king.png"))}};
+
+    //Logging
+    void log()
+    {
+        std::cout << std::endl;
+    }
+    template <typename T, typename... Types>
+    void log(T var, Types... varsToPrint)
+    {
+        std::cout << var << " ";
+        log(varsToPrint...);
+    }
 }
 // chessImagesWhite[Pawn] = wxString(wxT("C:\\Projects\\chess_app_gui\\src\\img\\black_king.png");
