@@ -16,12 +16,14 @@ Panel::Panel(wxFrame *parent)
 void Panel::createBoardGUI(wxPaintEvent &event)
 {
     //Draw board squares
-    wxPaintDC dc(this);
+    // wxPaintDC dc(this);
+    dc = new wxPaintDC(this);
     for (int i = 0; i < boardLength; i++)
     {
         for (int j = 0; j < boardLength; j++)
         {
-            drawSquare(dc, i, j);
+            // drawSquare(dc, i, j);
+            drawSquare(i, j);
         }
     }
 
@@ -39,13 +41,22 @@ void Panel::createBoardGUI(wxPaintEvent &event)
             Piece *p = &(board->ChessBoard[i][j]);
             if (!p->isEmpty)
             {
-                auto pieceGuiString = p->colour ? chessImagesWhite[p->type] : chessImagesBlack[p->type];
-                auto pieceGuiImage = wxImage(pieceGuiString);
-                p->boardX = j * pieceSize;
-                p->boardY = i * pieceSize;
-                p->pieceSize = pieceSize;
-                p->pieceImage = wxBitmap(pieceGuiImage.Scale(pieceSize, pieceSize));
-                dc.DrawBitmap(p->pieceImage, j * pieceSize, i * pieceSize, false);
+                if (!p->isLoaded)
+                {
+                    auto pieceGuiString = p->colour ? chessImagesWhite[p->type] : chessImagesBlack[p->type];
+                    auto pieceGuiImage = wxImage(pieceGuiString);
+                    p->boardX = j * pieceSize;
+                    p->boardY = i * pieceSize;
+                    p->x = i;
+                    p->y = j;
+                    p->pieceSize = pieceSize;
+                    p->pieceImage = wxBitmap(pieceGuiImage.Scale(pieceSize, pieceSize));
+                    dc->DrawBitmap(p->pieceImage, j * pieceSize, i * pieceSize, false);
+                }
+                else
+                {
+                    dc->DrawBitmap(p->pieceImage, j * p->pieceSize, i * p->pieceSize, false);
+                }
             }
         }
     }
@@ -74,7 +85,7 @@ void Panel::onMouseDown(wxMouseEvent &event)
             if (!p->isEmpty)
             {
                 //Check if click position is on a chess Piece
-                if (checkPosition(*p, pos))
+                if (checkPosition(*p, pos) && !p->isClicked)
                 {
                     log("clicked on a chess piece!!");
                     p->isClicked = true;
@@ -103,7 +114,7 @@ void Panel::onMove(wxMouseEvent &event)
         for (int j = 0; j < boardLength; j++)
         {
             auto *p = &(board->ChessBoard[i][j]);
-            if (!p->isEmpty && p->isClicked && event.Dragging())
+            if (!p->type && p->isClicked && event.Dragging())
             {
                 performDrag(p, event);
             }
@@ -115,21 +126,43 @@ void Panel::performDrag(Piece *p, wxMouseEvent &event)
 {
     if (!p->isDragging)
     {
+        log("got in if, onMove()");
+        // pieceDrag = new wxDragImage(p.pieceImage, wxCursor(wxCURSOR_HAND));
+        // log("Begin Drag ", pieceDrag->BeginDrag(p.dragPos, this));
         if (pieceDrag)
         {
             delete pieceDrag;
         }
         pieceDrag = new wxDragImage(p->pieceImage, wxCursor(wxCURSOR_HAND));
-        pieceDrag->BeginDrag(p.clickPos, this);
+        pieceDrag->BeginDrag(p->clickPos, this);
         p->isDragging = true;
+        // p->isEmpty = true;
+
+        // Refresh(true);
+        // Update();
+        // removePiece(p);
+        // log("Begin Drag ", pieceDrag->BeginDrag(p->dragPos, this));
     }
     else
     {
-        p->isDragging = true;
+        log("Got in else onMove()");
+        // p->isDragging = true;
         pieceDrag->Move(event.GetPosition());
         pieceDrag->Show();
     }
 }
+
+// void Panel::removePiece(Piece *p)
+// {
+//     //remove piece from GUI
+//     log("should be removing piece here!!!");
+//     wxRect rect(p->boardX, p->boardY, p->pieceImage.GetWidth(), p->pieceImage.GetHeight());
+//     // wxDCClipper clip(*dc, rect);
+//     dc->SetClippingRegion(rect.x, rect.y, rect.width, rect.height);
+//     dc->DestroyClippingRegion();
+//     //Update board
+// }
+
 void Panel::onMouseUp(wxMouseEvent &event)
 {
     for (int i = 0; i < boardLength; i++)
@@ -137,7 +170,7 @@ void Panel::onMouseUp(wxMouseEvent &event)
         for (int j = 0; j < boardLength; j++)
         {
             auto *p = &(board->ChessBoard[i][j]);
-            if (!p->isEmpty && p->isDragging)
+            if (p->isDragging && !p->isEmpty)
             {
                 // delete pieceDrag;
                 pieceDrag->EndDrag();
@@ -149,22 +182,23 @@ void Panel::onMouseUp(wxMouseEvent &event)
     }
 }
 
-void Panel::drawSquare(wxPaintDC &dc, int x, int y)
+// void Panel::drawSquare(wxPaintDC &dc, int x, int y)
+void Panel::drawSquare(int x, int y)
 {
     static wxColor light = wxColor(255, 222, 173);
     static wxColor dark = wxColor(205, 133, 63);
 
-    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc->SetPen(*wxTRANSPARENT_PEN);
     if (x % 2 == y % 2)
     {
-        dc.SetBrush(wxBrush(light));
+        dc->SetBrush(wxBrush(light));
     }
     else
     {
-        dc.SetBrush(wxBrush(dark));
+        dc->SetBrush(wxBrush(dark));
     }
-    dc.DrawRectangle(x * SquareLength(), y * SquareLength(),
-                     SquareLength(), SquareLength());
+    dc->DrawRectangle(x * SquareLength(), y * SquareLength(),
+                      SquareLength(), SquareLength());
 }
 
 int Panel::SquareLength()
