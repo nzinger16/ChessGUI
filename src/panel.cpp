@@ -120,7 +120,7 @@ void Panel::performDrag(Piece *p, wxMouseEvent &event)
             delete pieceDrag;
         }
         pieceDrag = new wxDragImage(p->pieceImage, wxCursor(wxCURSOR_HAND));
-        pieceDrag->BeginDrag(p.clickPos, this);
+        pieceDrag->BeginDrag(wxPoint(0, 0), this);
         p->isDragging = true;
     }
     else
