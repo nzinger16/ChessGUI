@@ -50,3 +50,15 @@ void Board::initialize()
 
     return;
 }
+
+bool Board::hasPieceAtPosition(int i, int j)
+{
+    if (ChessBoard[i][j].isEmpty)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
