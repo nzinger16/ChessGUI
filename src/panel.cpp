@@ -5,6 +5,7 @@ Panel::Panel(wxFrame *parent)
 {
     board = new Board();
     board->initialize();
+    initImageHandler = false;
     pieceDrag = (wxDragImage *)NULL;
     // pieceSize = SquareLength();
     Connect(wxEVT_PAINT, wxPaintEventHandler(Panel::createBoardGUI));
@@ -28,9 +29,12 @@ void Panel::createBoardGUI(wxPaintEvent &event)
     //Add Chess Nomenclature
 
     // Create Board and add chess pieces
-    // Board board;
-    // board.initialize();
-    ::wxInitAllImageHandlers();
+    if (!initImageHandler)
+    {
+        ::wxInitAllImageHandlers();
+        initImageHandler = true;
+    }
+
     int pieceSize = SquareLength();
     for (int i = 0; i < boardLength; i++)
     {
@@ -46,6 +50,7 @@ void Panel::createBoardGUI(wxPaintEvent &event)
                 p->pieceSize = pieceSize;
                 p->pieceImage = wxBitmap(pieceGuiImage.Scale(pieceSize, pieceSize));
                 dc.DrawBitmap(p->pieceImage, j * pieceSize, i * pieceSize, false);
+                // log(pieceSize * j, ", ", pieceSize * i);
             }
         }
     }
@@ -95,6 +100,8 @@ bool Panel::checkPosition(Piece &p, wxPoint &pt)
 
 void Panel::onMove(wxMouseEvent &event)
 {
+    //To do: Add square highlighting
+
     // log("Got in here!! onMove()");
     //future, templated lambda function to parse board then -> do something with piece/pieces
     // bool draggingBegun = false;
@@ -120,7 +127,7 @@ void Panel::performDrag(Piece *p, wxMouseEvent &event)
             delete pieceDrag;
         }
         pieceDrag = new wxDragImage(p->pieceImage, wxCursor(wxCURSOR_HAND));
-        pieceDrag->BeginDrag(p.clickPos, this);
+        pieceDrag->BeginDrag(wxPoint(0, 0), this);
         p->isDragging = true;
     }
     else
@@ -142,11 +149,50 @@ void Panel::onMouseUp(wxMouseEvent &event)
                 // delete pieceDrag;
                 pieceDrag->EndDrag();
                 wxDELETE(pieceDrag);
+
+                //Update piece status and place in new location only if its a valid move
                 p->isClicked = false;
                 p->isDragging = false;
+                //get new piece position after dragging
+                int xDropPos = (int)(event.GetPosition().x / p->pieceSize);
+                int yDropPos = (int)(event.GetPosition().y / p->pieceSize);
+                // Check if piece move is valid
+                if (isValidMove(xDropPos, yDropPos, p))
+                {
+                    p->boardX = p->pieceSize * xDropPos;
+                    p->boardY = p->pieceSize * yDropPos;
+                    p->hasMoved = true;
+                    //use std::move() instead to move the chess piece to different part of board array??
+                    board->ChessBoard[yDropPos][xDropPos] = *p;
+                    board->ChessBoard[i][j] = Piece();
+                }
+                //Refresh and update board to delete original dragging image
+                Refresh(true);
+                Update();
+                // log("Piece dragged to position: ", (int)xDropPos / p->pieceSize, ", ", (int)yDropPos / p->pieceSize);
             }
         }
     }
+}
+
+bool Panel::isValidMove(int xPos, int yPos, Piece *p)
+{
+    int origX = p->boardX / p->pieceSize;
+    int origY = p->boardY / p->pieceSize;
+    //Check if dropped position is off the board -> return false
+
+    //Check if piece is placed where a current piece is at -- this could be a capture (not supported currently) return false for now
+    if (board->hasPieceAtPosition(yPos, xPos))
+    {
+        return false;
+    }
+
+    //Check if piece move is valid
+    log("origX: ", origX, "xPos: ", xPos, "origY: ", origY, "yPose: ", yPos);
+    if (!p->isValidPieceMove(origX, origY, xPos, yPos))
+        return false;
+
+    return true;
 }
 
 void Panel::drawSquare(wxPaintDC &dc, int x, int y)

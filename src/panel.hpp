@@ -14,9 +14,11 @@ public:
     void onMove(wxMouseEvent &event);
     void drawSquare(wxPaintDC &dc, int x, int y);
     bool checkPosition(Piece &p, wxPoint &pt);
+    bool Panel::isValidMove(int xPos, int yPos, Piece *p);
     void performDrag(Piece *p, wxMouseEvent &event);
     int Panel::SquareLength();
     Board *board;
+    bool initImageHandler;
     wxDragImage *pieceDrag;
 
 private:
