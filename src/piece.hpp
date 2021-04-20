@@ -24,6 +24,8 @@ public:
     wxPoint dragPos;
     wxPoint clickPos;
 
+    //potentially use OOP inheritence for each individual piece?
+    bool hasMoved;
     std::string pieceName;
 
     Piece()
@@ -32,8 +34,11 @@ public:
     }
 
     void setPieceName();
+    //Need original x and y coordinates + new x and y coordinates of user piece placement
+    bool isValidPieceMove(int origX, int origY, int newX, int newY);
+    bool isPawnMoveValid(int origX, int origY, int newX, int newY);
 
-    Piece(PieceType type, bool colour) : type(type), colour(colour), isEmpty(false), isDragging(false), isClicked(false)
+    Piece(PieceType type, bool colour) : type(type), colour(colour), isEmpty(false), isDragging(false), isClicked(false), hasMoved(false)
     {
         setPieceName();
     }
